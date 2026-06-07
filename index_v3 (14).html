@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MusicPlanning</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;min-height:100vh;color:#1a1a1a}
+.topbar{background:#fff;border-bottom:1px solid #e5e5e5;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px}
+.logo i{color:#534AB7;font-size:20px}
+.role-badge{font-size:12px;padding:4px 12px;border-radius:20px;font-weight:500}
+.badge-prof{background:#EEEDFE;color:#3C3489}
+.badge-eleve{background:#E1F5EE;color:#085041}
+.tabs-bar{background:#fff;border-bottom:1px solid #e5e5e5;padding:0 24px;display:flex;gap:2px;flex-wrap:wrap}
+.tab{padding:10px 14px;font-size:13px;cursor:pointer;border:none;background:transparent;color:#888;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px;font-family:inherit}
+.tab:hover{color:#1a1a1a}
+.tab.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
+.main{max-width:1100px;margin:0 auto;padding:24px;display:flex;gap:20px}
+.sidebar{width:230px;flex-shrink:0}
+.content{flex:1;min-width:0}
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:18px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:600;color:#888;margin-bottom:14px;text-transform:uppercase;letter-spacing:.8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:1px solid #e5e5e5;background:#fff;font-size:13px;cursor:pointer;color:#1a1a1a;transition:all .15s;width:100%;justify-content:center;margin-bottom:6px;font-family:inherit}
+.btn:hover{background:#f5f5f0}
+.btn-primary{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489}
+.btn-primary:hover{background:#CECBF6}
+.btn-danger{background:#FCEBEB;border-color:#F09595;color:#791F1F}
+.btn-danger:hover{background:#F7C1C1}
+.btn-success{background:#EAF3DE;border-color:#97C459;color:#27500A}
+.btn-success:hover{background:#C0DD97}
+.btn-warning{background:#FAEEDA;border-color:#FAC775;color:#633806}
+.btn-warning:hover{background:#FAC775}
+.btn-sm{padding:5px 12px;font-size:12px;width:auto;margin:0}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.nav-btn{width:30px;height:30px;border-radius:8px;border:1px solid #e5e5e5;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888}
+.nav-btn:hover{background:#f5f5f0}
+.month-label{font-size:16px;font-weight:600;min-width:180px;text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.day-label{font-size:11px;color:#888;text-align:center;padding:6px 0;font-weight:600}
+.day-cell{min-height:85px;background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:5px;cursor:pointer;transition:all .15s}
+.day-cell:hover{background:#f5f5f0}
+.day-cell.today{border-color:#534AB7;border-width:2px}
+.day-cell.other-month{opacity:.3;cursor:default}
+.day-num{font-size:12px;color:#888;margin-bottom:3px}
+.today-num{font-size:12px;background:#534AB7;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;margin-bottom:3px}
+.lesson-pill{font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill-booked{background:#E1F5EE;color:#085041}
+.pill-free{background:#EEEDFE;color:#3C3489}
+.pill-pending{background:#FAEEDA;color:#633806}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal{background:#fff;border-radius:14px;padding:24px;width:100%;max-width:400px;position:relative;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.modal-sub{font-size:13px;color:#888;margin-bottom:18px}
+.close-btn{position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;color:#888;font-size:20px}
+.input-row{margin-bottom:12px}
+.input-row label{font-size:12px;color:#666;display:block;margin-bottom:5px;font-weight:500}
+.input-row input,.input-row select{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #e5e5e5;font-size:13px;color:#1a1a1a;font-family:inherit;background:#fff}
+.input-row input:focus,.input-row select:focus{outline:none;border-color:#534AB7}
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lesson-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #f0f0f0}
+.lesson-item:last-child{border-bottom:none}
+.lesson-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.lesson-info{flex:1;min-width:0}
+.lesson-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lesson-time{font-size:12px;color:#888;margin-top:1px}
+.icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid #e5e5e5;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#888;flex-shrink:0}
+.icon-btn:hover{background:#f5f5f0}
+.empty-state{text-align:center;padding:40px 10px;color:#aaa;font-size:13px}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:#f5f5f0;border-radius:8px;padding:12px}
+.stat-val{font-size:22px;font-weight:600}
+.stat-label{font-size:11px;color:#888;margin-top:2px}
+.notif{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1D9E75;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:2000;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);white-space:nowrap}
+.notif.error{background:#E24B4A}
+.notif.warning{background:#BA7517}
+.tag-free{display:inline-block;background:#EEEDFE;color:#3C3489;font-size:10px;padding:2px 7px;border-radius:4px;margin-left:4px}
+.info-box{border-radius:8px;padding:10px 14px;font-size:12px;margin-top:10px;line-height:1.6;display:flex;align-items:flex-start;gap:8px}
+.info-green{background:#E1F5EE;color:#085041;border:1px solid #5DCAA5}
+.info-orange{background:#FAEEDA;color:#633806;border:1px solid #FAC775}
+.info-purple{background:#EEEDFE;color:#3C3489;border:1px solid #AFA9EC}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f5f0}
+.login-box{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:400px;text-align:center;box-shadow:0 4px 30px rgba(0,0,0,.08)}
+.role-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.role-card{background:#fff;border:1.5px solid #e5e5e5;border-radius:12px;padding:24px 16px;cursor:pointer;transition:all .15s;text-align:center}
+.role-card:hover{border-color:#534AB7;background:#EEEDFE;transform:translateY(-2px)}
+.role-card i{font-size:32px;display:block;margin-bottom:10px;color:#534AB7}
+.role-card-title{font-size:14px;font-weight:600}
+.role-card-sub{font-size:12px;color:#888;margin-top:3px}
+.var-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:12px;align-items:center}
+.var-code{background:#f5f5f0;padding:5px 10px;border-radius:6px;font-family:monospace;font-size:11px;color:#534AB7}
+
+/* Élèves */
+.eleve-card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:16px;margin-bottom:10px;transition:all .15s}
+.eleve-card:hover{border-color:#AFA9EC;box-shadow:0 2px 12px rgba(83,74,183,.08)}
+.eleve-avatar{width:44px;height:44px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#3C3489;flex-shrink:0}
+.eleve-info{flex:1;min-width:0}
+.eleve-name{font-size:14px;font-weight:600}
+.eleve-detail{font-size:12px;color:#888;margin-top:2px;display:flex;align-items:center;gap:6px}
+.eleve-detail i{font-size:13px}
+.eleve-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;background:#EAF3DE;color:#27500A;font-weight:500;margin-top:4px}
+.search-bar{width:100%;padding:9px 14px 9px 36px;border-radius:8px;border:1px solid #e5e5e5;font-size:13px;font-family:inherit;background:#fff;color:#1a1a1a;margin-bottom:16px}
+.search-bar:focus{outline:none;border-color:#534AB7}
+.search-wrap{position:relative}
+.search-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#aaa;font-size:16px;pointer-events:none}
+.pill-count{display:inline-block;background:#EEEDFE;color:#3C3489;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;margin-left:6px}
+
+@media(max-width:700px){.main{flex-direction:column;padding:16px}.sidebar{width:100%}.input-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <div style="font-size:36px;margin-bottom:12px">🎵</div>
+    <div style="font-size:24px;font-weight:700;margin-bottom:8px">MusicPlanning</div>
+    <div style="font-size:14px;color:#888;margin-bottom:32px">Gérez vos cours de musique facilement</div>
+    <div class="role-cards">
+      <div class="role-card" onclick="loginEleve()">
+        <i class="ti ti-user"></i>
+        <div class="role-card-title">Je suis élève</div>
+        <div class="role-card-sub">Réserver un cours</div>
+      </div>
+      <div class="role-card" onclick="openProfLogin()" style="border-color:#e5e5e5">
+        <i class="ti ti-lock" style="color:#888"></i>
+        <div class="role-card-title" style="color:#888">Professeur</div>
+        <div class="role-card-sub">Accès sécurisé</div>
+      </div>
+    </div>
+    <div id="prof-login-form" style="display:none;margin-top:16px;text-align:left">
+      <div class="input-row">
+        <label>Mot de passe professeur</label>
+        <input type="password" id="prof-password" placeholder="Entrez votre mot de passe" onkeydown="if(event.key==='Enter')checkProfPassword()">
+      </div>
+      <div id="prof-login-error" style="display:none;font-size:12px;color:#E24B4A;margin-bottom:8px">Mot de passe incorrect</div>
+      <button class="btn btn-primary" onclick="checkProfPassword()"><i class="ti ti-login"></i> Se connecter</button>
+      <button class="btn" onclick="showForgotPassword()" style="color:#888;margin-top:4px;font-size:12px;border:none;background:none;cursor:pointer;width:auto;justify-content:flex-start;padding:4px 0"><i class="ti ti-help"></i> Mot de passe oublié ?</button>
+      <button class="btn" onclick="closeProfLogin()" style="color:#888;margin-top:4px">Annuler</button>
+    </div>
+    <div id="forgot-pwd-form" style="display:none;margin-top:16px;text-align:left">
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px"><i class="ti ti-mail"></i> Récupération par email</div>
+      <div style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.6">Un email avec votre mot de passe actuel sera envoyé à votre adresse professeur configurée dans l'app.</div>
+      <div id="forgot-result" style="display:none;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:10px"></div>
+      <button class="btn btn-primary" onclick="sendForgotPassword()"><i class="ti ti-send"></i> Recevoir mon mot de passe</button>
+      <button class="btn" onclick="closeForgotPassword()" style="color:#888;margin-top:4px">Retour</button>
+    </div>
+    <div style="font-size:12px;color:#aaa;margin-top:12px">Cliquez sur votre profil pour commencer</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" style="display:none">
+  <div id="notif-bar" style="display:none" class="notif"></div>
+  <div class="topbar">
+    <div class="logo"><i class="ti ti-music"></i> MusicPlanning</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="role-badge" id="role-badge"></span>
+      <button class="btn btn-sm" onclick="logout()" style="color:#888"><i class="ti ti-logout"></i> Déconnexion</button>
+    </div>
+  </div>
+  <div class="tabs-bar">
+    <button class="tab active" id="tab-cal" onclick="showTab('cal')"><i class="ti ti-calendar"></i> Calendrier</button>
+    <button class="tab" id="tab-list" onclick="showTab('list')"><i class="ti ti-list"></i> Créneaux disponibles</button>
+    <button class="tab" id="tab-rappels" onclick="showTab('rappels')" style="display:none"><i class="ti ti-bell"></i> Rappels</button>
+    <button class="tab" id="tab-eleves" onclick="showTab('eleves')" style="display:none"><i class="ti ti-users"></i> Élèves</button>
+    <button class="tab" id="tab-config" onclick="showTab('config')"><i class="ti ti-settings"></i> Config email</button>
+  </div>
+  <div class="main">
+    <div class="sidebar">
+      <div class="card">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Cours ce mois</div></div>
+          <div class="stat"><div class="stat-val" id="stat-free">0</div><div class="stat-label">Disponibles</div></div>
+        </div>
+        <div id="prof-actions"></div>
+        <div id="eleve-actions"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Légende</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:11px;height:11px;border-radius:3px;background:#1D9E75;display:inline-block"></span> Cours réservé</div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:11px;height:11px;border-radius:3px;background:#BA7517;display:inline-block"></span> En attente</div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:11px;height:11px;border-radius:3px;background:#7F77DD;display:inline-block"></span> Créneau libre</div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:11px;height:11px;border-radius:3px;background:#E24B4A;display:inline-block"></span> Annulé</div>
+        </div>
+      </div>
+      <div class="card" id="email-status-card" style="display:none">
+        <div class="card-title">Statut EmailJS</div>
+        <div id="email-status-display"></div>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- CALENDRIER -->
+      <div id="view-cal">
+        <div class="card">
+          <div class="cal-header">
+            <button class="nav-btn" onclick="prevMonth()"><i class="ti ti-chevron-left"></i></button>
+            <div class="month-label" id="month-label"></div>
+            <button class="nav-btn" onclick="nextMonth()"><i class="ti ti-chevron-right"></i></button>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+      </div>
+
+      <!-- MES COURS -->
+      <div id="view-list" style="display:none">
+        <div class="card"><div class="card-title" id="list-title">Cours à venir</div><div id="lesson-list"></div></div>
+      </div>
+
+      <!-- RAPPELS -->
+      <div id="view-rappels" style="display:none">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-bell"></i> Rappels automatiques</div>
+          <div style="font-size:13px;color:#888;margin-bottom:16px;line-height:1.7">Les rappels sont envoyés automatiquement <strong style="color:#1a1a1a">24h</strong> et <strong style="color:#1a1a1a">1h</strong> avant chaque cours réservé dès que la page est ouverte.</div>
+          <div class="info-box info-purple" style="margin-bottom:16px"><i class="ti ti-info-circle" style="flex-shrink:0"></i><div>Créez un 3ème template EmailJS "Rappel" avec les mêmes variables + <code style="background:#e0deff;padding:1px 5px;border-radius:4px">{{delai}}</code> et collez son ID dans Config email.</div></div>
+          <button class="btn btn-warning" onclick="sendAllReminders()"><i class="ti ti-send"></i> Envoyer tous les rappels maintenant</button>
+          <div id="reminder-progress" style="display:none;margin-top:10px;padding:10px 14px;background:#f5f5f0;border-radius:8px;font-size:13px;color:#888"></div>
+          <div style="margin-top:20px;border-top:1px solid #f0f0f0;padding-top:16px">
+            <div class="card-title">Cours à venir</div>
+            <div id="reminder-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÉLÈVES -->
+      <div id="view-eleves" style="display:none">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div>
+              <span class="card-title" style="margin-bottom:0">Mes élèves</span>
+              <span class="pill-count" id="eleves-count">0</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAddEleve()"><i class="ti ti-user-plus"></i> Ajouter un élève</button>
+          </div>
+          <div class="search-wrap" style="margin-bottom:16px">
+            <i class="ti ti-search"></i>
+            <input type="text" class="search-bar" id="eleve-search" placeholder="Rechercher un élève..." oninput="renderEleves()">
+          </div>
+          <div id="eleves-list"></div>
+        </div>
+      </div>
+
+      <!-- CONFIG -->
+      <div id="view-config" style="display:none">
+        <div class="card">
+          <div class="card-title">Configuration EmailJS</div>
+          <div style="font-size:13px;color:#888;margin-bottom:18px;line-height:1.6">Renseignez vos identifiants EmailJS pour activer confirmations et rappels automatiques.</div>
+          <div class="input-row"><label>Public Key</label><input type="text" id="cfg-pubkey" placeholder="ex: EOvD1Jaa87_nznG2d"></div>
+          <div class="input-row"><label>Service ID</label><input type="text" id="cfg-service" placeholder="ex: service_5d01sra"></div>
+          <div class="input-row"><label>Template ID — Confirmation réservation</label><input type="text" id="cfg-tpl-book" placeholder="ex: template_g007p79"></div>
+          <div class="input-row"><label>Template ID — Annulation</label><input type="text" id="cfg-tpl-cancel" placeholder="ex: template_fyqmbpp"></div>
+          <div class="input-row"><label>Template ID — Rappel de cours <span style="font-size:11px;background:#FAEEDA;color:#633806;padding:2px 7px;border-radius:4px;margin-left:6px">nouveau</span></label><input type="text" id="cfg-tpl-reminder" placeholder="ex: template_rappel_xxx"></div>
+          <div class="input-row"><label>Votre email professeur</label><input type="email" id="cfg-prof-email" placeholder="ex: yaan.nicolas@gmail.com"></div>
+          <button class="btn btn-primary" onclick="saveConfig()"><i class="ti ti-device-floppy"></i> Enregistrer la configuration</button>
+          <div style="margin-top:20px;border-top:1px solid #f0f0f0;padding-top:18px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px"><i class="ti ti-lock"></i> Changer le mot de passe professeur</div>
+            <div style="font-size:12px;color:#888;margin-bottom:12px">Le mot de passe actuel est requis pour en définir un nouveau.</div>
+            <div class="input-row"><label>Mot de passe actuel</label><input type="password" id="pwd-current" placeholder="Mot de passe actuel"></div>
+            <div class="input-row"><label>Nouveau mot de passe</label><input type="password" id="pwd-new" placeholder="Nouveau mot de passe"></div>
+            <div class="input-row"><label>Confirmer le nouveau mot de passe</label><input type="password" id="pwd-confirm" placeholder="Confirmer le mot de passe"></div>
+            <div id="pwd-error" style="display:none;font-size:12px;color:#E24B4A;margin-bottom:8px"></div>
+            <div id="pwd-success" style="display:none;font-size:12px;color:#1D9E75;margin-bottom:8px">✅ Mot de passe modifié avec succès !</div>
+            <button class="btn btn-warning" onclick="changePassword()"><i class="ti ti-key"></i> Changer le mot de passe</button>
+          </div>
+          <div style="margin-top:20px;border-top:1px solid #f0f0f0;padding-top:18px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:12px">Variables dans vos templates :</div>
+            <div class="var-grid">
+              <div class="var-code">{{to_name}}</div><div style="font-size:12px;color:#666">Nom de l'élève</div>
+              <div class="var-code">{{to_email}}</div><div style="font-size:12px;color:#666">Email de l'élève</div>
+              <div class="var-code">{{date}}</div><div style="font-size:12px;color:#666">Date du cours</div>
+              <div class="var-code">{{heure}}</div><div style="font-size:12px;color:#666">Heure du cours</div>
+              <div class="var-code">{{instrument}}</div><div style="font-size:12px;color:#666">Instrument</div>
+              <div class="var-code">{{prof_email}}</div><div style="font-size:12px;color:#666">Email du professeur</div>
+              <div class="var-code">{{delai}}</div><div style="font-size:12px;color:#666">Délai rappel — rappels uniquement</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="handleModalBgClick(event)">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+let INSTRUMENTS=['Boula','Maké'];
+const TIMES=['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+const today=new Date();
+let role=null,curYear=today.getFullYear(),curMonth=today.getMonth();
+let emailConfig={pubkey:'',serviceId:'',tplBook:'',tplCancel:'',tplReminder:'',profEmail:''};
+let ejsReady=false;
+
+// ── WEBHOOK MAKE / WHATSAPP ──
+const MAKE_WEBHOOK='https://hook.eu1.make.com/axv90po2fodxhuig91qayl1tqaw4y51s';
+
+async function sendToMake(type,lesson,delai){
+  const d=new Date(lesson.date+'T12:00:00');
+  const dateStr=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  try{
+    await fetch(MAKE_WEBHOOK,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        type:type,
+        statut:delai||type,
+        eleve_nom:lesson.eleve,
+        eleve_email:lesson.eleveEmail,
+        eleve_tel:lesson.eleveTel?'whatsapp:'+lesson.eleveTel:'',
+        date:dateStr,
+        heure:lesson.time,
+        instrument:lesson.instrument,
+        prof_email:emailConfig.profEmail,
+        message:type==='demande_creneau'
+          ?'⏳ Nouvelle demande — '+lesson.eleve+' souhaite un cours de '+lesson.instrument+' le '+dateStr+' à '+lesson.time
+          :type==='confirmation'
+          ?'✅ Cours confirmé ! '+lesson.eleve+' — '+lesson.instrument+' le '+dateStr+' à '+lesson.time
+          :type==='annulation'||type==='annulation_prof'
+          ?'❌ Cours annulé — '+lesson.instrument+' le '+dateStr+' à '+lesson.time
+          :'📅 '+lesson.eleve+' — '+lesson.instrument+' le '+dateStr+' à '+lesson.time
+      })
+    });
+    return true;
+  }catch(e){console.error('Make webhook error',e);return false;}
+}
+
+function fmtDate(y,m,d){const dt=new Date(y,m,d);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
+
+// ── GOOGLE SHEETS ──
+const GS_URL='https://script.google.com/macros/s/AKfycbzlznw3CsI7jV32zGfznVKH2kpmSl6buQKRZzOLZK2e1-iyZWqEOygwPylG5q7nVc21sQ/exec';
+
+async function gsGet(action){
+  try{
+    const r=await fetch(GS_URL+'?action='+action);
+    return await r.json();
+  }catch(e){return null;}
+}
+async function gsPost(data){
+  try{
+    const r=await fetch(GS_URL,{method:'POST',body:JSON.stringify(data)});
+    return await r.json();
+  }catch(e){return null;}
+}
+
+async function saveLesson(lesson){
+  await gsPost({action:'saveLesson',lesson:lesson});
+}
+async function saveLessonDelete(id){
+  await gsPost({action:'deleteLesson',id:id});
+}
+async function saveEleveGS(eleve){
+  await gsPost({action:'saveEleve',eleve:eleve});
+}
+async function saveEleveDelete(id){
+  await gsPost({action:'deleteEleve',id:id});
+}
+
+async function saveInstruments(){
+  await gsPost({action:'saveInstruments',instruments:INSTRUMENTS});
+}
+
+async function loadFromSheets(){
+  showLoadingOverlay(true);
+  try{
+    // Charger la config EmailJS
+    if(!emailConfig.pubkey){
+      const configData=await gsGet('getConfig');
+      if(configData&&configData.length>1){
+        configData.slice(1).forEach(function(r){
+          if(r[0]&&r[1])emailConfig[r[0]]=r[1];
+        });
+        try{localStorage.setItem('mps_config',JSON.stringify(emailConfig));}catch(e){}
+        initEJS();
+        updateEmailStatus();
+        if(role==='prof')fillConfigForm();
+      }
+    }
+    // Charger les instruments
+    const instData=await gsGet('getInstruments');
+    if(instData&&instData.length>1){
+      const loaded=instData.slice(1).map(function(r){return r[0];}).filter(function(i){return i;});
+      if(loaded.length>0)INSTRUMENTS=loaded;
+    }
+    // Charger les réservations
+    const lessonsData=await gsGet('getLessons');
+    if(lessonsData&&lessonsData.length>1){
+      lessons=lessonsData.slice(1).map(function(r){
+        return{id:parseInt(r[0]),date:r[1],time:r[2],instrument:r[3],eleve:r[4]||'',eleveEmail:r[5]||'',eleveTel:r[6]||'',status:r[7],eleveId:null};
+      }).filter(function(l){return l.id&&l.date;});
+      if(lessons.length>0)nextId=Math.max.apply(null,lessons.map(function(l){return l.id;}))+1;
+    }
+    // Charger les élèves
+    const elevesData=await gsGet('getEleves');
+    if(elevesData&&elevesData.length>1){
+      eleves=elevesData.slice(1).map(function(r){
+        return{id:parseInt(r[0]),prenom:r[1]||'',nom:r[2]||'',email:r[3]||'',tel:r[4]||'',instrument:r[5]||'',notes:r[6]||''};
+      }).filter(function(e){return e.id&&e.prenom;});
+      if(eleves.length>0)nextEleveId=Math.max.apply(null,eleves.map(function(e){return e.id;}))+1;
+    }
+  }catch(e){}
+  showLoadingOverlay(false);
+  renderCal();updateStats();
+}
+
+function showLoadingOverlay(show){
+  let el=document.getElementById('loading-overlay');
+  if(!el){
+    el=document.createElement('div');
+    el.id='loading-overlay';
+    el.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:12px';
+    el.innerHTML='<div style="font-size:28px">🎵</div><div style="font-size:14px;color:#888;font-family:sans-serif">Chargement des données...</div>';
+    document.body.appendChild(el);
+  }
+  el.style.display=show?'flex':'none';
+}
+
+// ── DONNÉES ──
+let eleves=[];
+let nextEleveId=1;
+let lessons=[];
+let nextId=1;
+
+// ── ÉLÈVES ──
+function openAddEleve(){
+  showModal('<div class="modal-title">Ajouter un élève</div>'
+    +'<div class="modal-sub">Renseignez les informations de l\'élève</div>'
+    +'<div class="input-grid">'
+    +'<div class="input-row"><label>Prénom</label><input type="text" id="e-prenom" placeholder="ex: Marie"></div>'
+    +'<div class="input-row"><label>Nom</label><input type="text" id="e-nom" placeholder="ex: Dupont"></div>'
+    +'</div>'
+    +'<div class="input-row"><label>Email</label><input type="email" id="e-email" placeholder="ex: marie@email.com"></div>'
+    +'<div class="input-row"><label>Téléphone</label><input type="tel" id="e-tel" placeholder="ex: 0690 123 456"></div>'
+    +'<div class="input-row"><label>Instrument principal</label><select id="e-inst">'+INSTRUMENTS.map(function(i){return'<option>'+i+'</option>';}).join('')+'</select></div>'
+    +'<div class="input-row"><label>Notes (optionnel)</label><input type="text" id="e-notes" placeholder="ex: Débutant, niveau 3..."></div>'
+    +'<button class="btn btn-primary" onclick="saveEleve()"><i class="ti ti-check"></i> Enregistrer l\'élève</button>');
+}
+
+function openEditEleve(id){
+  const e=eleves.find(function(x){return x.id===id;});
+  if(!e)return;
+  showModal('<div class="modal-title">Modifier l\'élève</div>'
+    +'<div class="modal-sub">'+e.prenom+' '+e.nom+'</div>'
+    +'<div class="input-grid">'
+    +'<div class="input-row"><label>Prénom</label><input type="text" id="e-prenom" value="'+e.prenom+'"></div>'
+    +'<div class="input-row"><label>Nom</label><input type="text" id="e-nom" value="'+e.nom+'"></div>'
+    +'</div>'
+    +'<div class="input-row"><label>Email</label><input type="email" id="e-email" value="'+e.email+'"></div>'
+    +'<div class="input-row"><label>Téléphone</label><input type="tel" id="e-tel" value="'+e.tel+'"></div>'
+    +'<div class="input-row"><label>Instrument principal</label><select id="e-inst">'+INSTRUMENTS.map(function(i){return'<option'+(i===e.instrument?' selected':'')+'>'+i+'</option>';}).join('')+'</select></div>'
+    +'<div class="input-row"><label>Notes</label><input type="text" id="e-notes" value="'+e.notes+'"></div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button class="btn btn-primary" style="flex:1" onclick="saveEleve('+id+')"><i class="ti ti-check"></i> Enregistrer</button>'
+    +'<button class="btn btn-danger btn-sm" style="flex:0 0 auto" onclick="deleteEleve('+id+')"><i class="ti ti-trash"></i></button>'
+    +'</div>');
+}
+
+function saveEleve(id){
+  const prenom=document.getElementById('e-prenom').value.trim();
+  const nom=document.getElementById('e-nom').value.trim();
+  const email=document.getElementById('e-email').value.trim();
+  const tel=document.getElementById('e-tel').value.trim();
+  const instrument=document.getElementById('e-inst').value;
+  const notes=document.getElementById('e-notes').value.trim();
+  if(!prenom||!nom){showNotif('Prénom et nom requis','err');return;}
+  if(id){
+    const e=eleves.find(function(x){return x.id===id;});
+    Object.assign(e,{prenom,nom,email,tel,instrument,notes});
+    saveEleveGS(e);
+    showNotif('Élève modifié !','ok');
+  }else{
+    const newE={id:nextEleveId++,prenom,nom,email,tel,instrument,notes};
+    eleves.push(newE);
+    saveEleveGS(newE);
+    showNotif('Élève ajouté !','ok');
+  }
+  closeModal();renderEleves();
+}
+
+function deleteEleve(id){
+  if(!confirm('Supprimer cet élève ?'))return;
+  eleves=eleves.filter(function(x){return x.id!==id;});
+  saveEleveDelete(id);
+  closeModal();renderEleves();showNotif('Élève supprimé','warning');
+}
+
+function renderEleves(){
+  const el=document.getElementById('eleves-list');
+  const search=(document.getElementById('eleve-search')||{value:''}).value.toLowerCase();
+  let filtered=eleves.filter(function(e){
+    return !search||(e.prenom+' '+e.nom+' '+e.email+' '+e.instrument).toLowerCase().includes(search);
+  });
+  document.getElementById('eleves-count').textContent=eleves.length;
+  if(!filtered.length){
+    el.innerHTML='<div class="empty-state">'+(search?'Aucun résultat pour "'+search+'"':'Aucun élève — cliquez sur "Ajouter un élève"')+'</div>';
+    return;
+  }
+  el.innerHTML=filtered.map(function(e){
+    const ini=(e.prenom[0]+(e.nom[0]||'')).toUpperCase();
+    const coursEleve=lessons.filter(function(l){return l.eleveId===e.id&&l.status==='booked';});
+    return '<div class="eleve-card">'
+      +'<div style="display:flex;align-items:flex-start;gap:14px">'
+      +'<div class="eleve-avatar">'+ini+'</div>'
+      +'<div class="eleve-info">'
+      +'<div class="eleve-name">'+e.prenom+' '+e.nom+'</div>'
+      +(e.email?'<div class="eleve-detail"><i class="ti ti-mail"></i> '+e.email+'</div>':'')
+      +(e.tel?'<div class="eleve-detail"><i class="ti ti-phone"></i> '+e.tel+'</div>':'')
+      +'<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">'
+      +'<span class="eleve-tag"><i class="ti ti-music" style="font-size:11px"></i> '+e.instrument+'</span>'
+      +(coursEleve.length?'<span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;background:#EEEDFE;color:#3C3489;font-weight:500">'+coursEleve.length+' cours réservé'+(coursEleve.length>1?'s':'')+'</span>':'')
+      +(e.notes?'<span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;background:#f5f5f0;color:#888">'+e.notes+'</span>':'')
+      +'</div></div>'
+      +'<div style="display:flex;gap:6px;margin-left:auto">'
+      +(e.tel?'<a href="tel:'+e.tel+'" class="icon-btn" title="Appeler" style="color:#1D9E75;text-decoration:none"><i class="ti ti-phone"></i></a>':'')
+      +(e.email?'<a href="mailto:'+e.email+'" class="icon-btn" title="Envoyer un email" style="color:#534AB7;text-decoration:none"><i class="ti ti-mail"></i></a>':'')
+      +'<button class="icon-btn" title="Modifier" onclick="openEditEleve('+e.id+')" style="color:#888"><i class="ti ti-edit"></i></button>'
+      +'</div></div></div>';
+  }).join('');
+}
+
+// ── RAPPELS ──
+function scheduleReminders(lesson){
+  if(!lesson.eleveEmail)return;
+  const parts=lesson.date.split('-').map(Number);
+  const tp=lesson.time.split(':').map(Number);
+  const courseTime=new Date(parts[0],parts[1]-1,parts[2],tp[0],tp[1]).getTime();
+  const now=Date.now();
+  const d24=courseTime-(24*60*60*1000)-now;
+  const d1=courseTime-(60*60*1000)-now;
+  if(d24>0)setTimeout(function(){sendReminderEmail(lesson,'24h avant votre cours');},d24);
+  if(d1>0)setTimeout(function(){sendReminderEmail(lesson,'1h avant votre cours');},d1);
+}
+
+async function sendReminderEmail(lesson,delai){
+  if(!ejsReady||!emailConfig.tplReminder||!lesson.eleveEmail)return false;
+  const d=new Date(lesson.date+'T12:00:00');
+  const dateStr=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  const params={to_name:lesson.eleve,to_email:lesson.eleveEmail,date:dateStr,heure:lesson.time,instrument:lesson.instrument,prof_email:emailConfig.profEmail,delai:delai};
+  try{
+    await emailjs.send(emailConfig.serviceId,emailConfig.tplReminder,Object.assign({},params,{to_email:lesson.eleveEmail}));
+    if(emailConfig.profEmail)await emailjs.send(emailConfig.serviceId,emailConfig.tplReminder,Object.assign({},params,{to_email:emailConfig.profEmail,to_name:'Professeur'}));
+    showNotif('⏰ Rappel envoyé à '+lesson.eleve,'ok');
+    sendToMake('rappel',lesson,delai);
+    return true;
+  }catch(e){return false;}
+}
+
+async function sendAllReminders(){
+  const upcoming=lessons.filter(function(l){return l.status==='booked'&&l.eleveEmail&&new Date(l.date+'T'+l.time)>new Date();});
+  if(!upcoming.length){showNotif('Aucun cours à venir avec email','warning');return;}
+  if(!ejsReady||!emailConfig.tplReminder){showNotif('Ajoutez le template rappel dans Config email','err');return;}
+  const prog=document.getElementById('reminder-progress');
+  prog.style.display='block';
+  for(var i=0;i<upcoming.length;i++){
+    prog.textContent='Rappel pour '+upcoming[i].eleve+'... ('+(i+1)+'/'+upcoming.length+')';
+    await sendReminderEmail(upcoming[i],'Rappel — cours à venir');
+    await new Promise(function(r){setTimeout(r,700);});
+  }
+  prog.textContent='✅ '+upcoming.length+' rappel(s) envoyé(s) !';
+  setTimeout(function(){prog.style.display='none';},4000);
+  renderReminderList();
+}
+
+function renderReminderList(){
+  const el=document.getElementById('reminder-list');if(!el)return;
+  const upcoming=lessons.filter(function(l){return l.status==='booked'&&new Date(l.date+'T'+l.time)>new Date();}).sort(function(a,b){return a.date.localeCompare(b.date);});
+  if(!upcoming.length){el.innerHTML='<div class="empty-state">Aucun cours réservé à venir</div>';return;}
+  const hasTpl=!!emailConfig.tplReminder;
+  el.innerHTML=upcoming.map(function(l){
+    const d=new Date(l.date+'T12:00:00');
+    const diffH=Math.round((new Date(l.date+'T'+l.time).getTime()-Date.now())/3600000);
+    const diffLabel=diffH>48?'dans '+Math.round(diffH/24)+' jours':diffH>1?'dans '+diffH+'h':'imminent';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:#f5f5f0;border-radius:8px;margin-bottom:8px">'
+      +'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+l.eleve+' — '+l.instrument+'</div>'
+      +'<div style="font-size:12px;color:#888">'+d.getDate()+' '+MONTHS[d.getMonth()]+' à '+l.time+' <span style="color:#534AB7;font-weight:500">('+diffLabel+')</span></div>'
+      +(l.eleveEmail?'<div style="font-size:11px;color:#aaa">'+l.eleveEmail+'</div>':'<div style="font-size:11px;color:#E24B4A">⚠️ Pas d\'email</div>')+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">'
+      +(diffH>24?'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#FAEEDA;color:#633806;font-weight:600">24h '+(hasTpl?'✓':'—')+'</span>':'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#EAF3DE;color:#27500A">24h passé</span>')
+      +(diffH>1?'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#EEEDFE;color:#3C3489;font-weight:600">1h '+(hasTpl?'✓':'—')+'</span>':'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#EAF3DE;color:#27500A">1h passé</span>')
+      +'</div>'
+      +'<button class="icon-btn" title="Rappel maintenant" style="color:#BA7517" onclick="sendReminderEmail(lessons.find(function(x){return x.id=='+l.id+';}),\'Rappel manuel\')"><i class="ti ti-bell"></i></button>'
+      +'</div>';
+  }).join('');
+}
+
+// ── CONFIG ──
+async function saveConfig(){
+  emailConfig={
+    pubkey:document.getElementById('cfg-pubkey').value.trim(),
+    serviceId:document.getElementById('cfg-service').value.trim(),
+    tplBook:document.getElementById('cfg-tpl-book').value.trim(),
+    tplCancel:document.getElementById('cfg-tpl-cancel').value.trim(),
+    tplReminder:document.getElementById('cfg-tpl-reminder').value.trim(),
+    profEmail:document.getElementById('cfg-prof-email').value.trim()
+  };
+  // Sauvegarder dans localStorage
+  try{localStorage.setItem('mps_config',JSON.stringify(emailConfig));}catch(e){}
+  // Sauvegarder dans Google Sheets
+  await gsPost({action:'saveConfig',config:emailConfig});
+  ejsReady=false;initEJS();
+  showNotif('Configuration enregistrée !','ok');updateEmailStatus();
+}
+
+async function loadConfig(){
+  // Essayer d'abord localStorage
+  try{const s=localStorage.getItem('mps_config');if(s){emailConfig=JSON.parse(s);initEJS();}}catch(e){}
+  // Charger depuis Google Sheets si localStorage vide
+  if(!emailConfig.pubkey){
+    try{
+      const data=await gsGet('getConfig');
+      if(data&&data.length>1){
+        data.slice(1).forEach(function(r){
+          if(r[0]&&r[1])emailConfig[r[0]]=r[1];
+        });
+        try{localStorage.setItem('mps_config',JSON.stringify(emailConfig));}catch(e){}
+        initEJS();
+      }
+    }catch(e){}
+  }
+  updateEmailStatus();
+}
+function initEJS(){
+  if(emailConfig.pubkey&&typeof emailjs!=='undefined'){
+    try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){ejsReady=false;}
+  }
+}
+function updateEmailStatus(){
+  const el=document.getElementById('email-status-display');if(!el)return;
+  const ok=emailConfig.pubkey&&emailConfig.serviceId&&emailConfig.tplBook&&emailConfig.profEmail;
+  const hasR=!!emailConfig.tplReminder;
+  if(ok){
+    el.innerHTML='<div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#1D9E75"><i class="ti ti-circle-check"></i> Emails configurés</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-top:6px;color:'+(hasR?'#1D9E75':'#BA7517')+'"><i class="ti ti-'+(hasR?'bell':'bell-off')+'"></i> Rappels '+(hasR?'activés':'non configurés')+'</div>';
+  }else{
+    el.innerHTML='<div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#BA7517"><i class="ti ti-alert-triangle"></i> Non configuré</div>';
+  }
+}
+
+async function sendEmails(lesson,type){
+  if(!ejsReady)return false;
+  const tplId=type==='book'?emailConfig.tplBook:emailConfig.tplCancel;
+  if(!tplId||!lesson.eleveEmail)return false;
+  const d=new Date(lesson.date+'T12:00:00');
+  const dateStr=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  const statut=type==='book'
+    ?'✅ Votre cours est confirmé. À bientôt !'
+    :'❌ Ce cours a été annulé. Vous pouvez réserver un autre créneau sur MusicPlanning.';
+  const params={to_name:lesson.eleve,to_email:lesson.eleveEmail,date:dateStr,heure:lesson.time,instrument:lesson.instrument,prof_email:emailConfig.profEmail,statut:statut};
+  try{
+    await emailjs.send(emailConfig.serviceId,tplId,Object.assign({},params,{to_email:lesson.eleveEmail}));
+    if(emailConfig.profEmail)await emailjs.send(emailConfig.serviceId,tplId,Object.assign({},params,{to_email:emailConfig.profEmail,to_name:'Professeur',statut:type==='book'?'✅ Nouveau cours réservé par '+lesson.eleve:'❌ Cours annulé par '+lesson.eleve}));
+    return true;
+  }catch(e){return false;}
+}
+
+// ── AUTH ──
+let PROF_PASSWORD = localStorage.getItem('mps_pwd') || 'musicprof2026';
+
+function changePassword(){
+  const current=document.getElementById('pwd-current').value;
+  const newPwd=document.getElementById('pwd-new').value;
+  const confirm=document.getElementById('pwd-confirm').value;
+  const errEl=document.getElementById('pwd-error');
+  const okEl=document.getElementById('pwd-success');
+  errEl.style.display='none';okEl.style.display='none';
+  if(current!==PROF_PASSWORD){
+    errEl.textContent='Mot de passe actuel incorrect.';errEl.style.display='block';return;
+  }
+  if(newPwd.length<6){
+    errEl.textContent='Le nouveau mot de passe doit contenir au moins 6 caractères.';errEl.style.display='block';return;
+  }
+  if(newPwd!==confirm){
+    errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';return;
+  }
+  PROF_PASSWORD=newPwd;
+  try{localStorage.setItem('mps_pwd',newPwd);}catch(e){}
+  document.getElementById('pwd-current').value='';
+  document.getElementById('pwd-new').value='';
+  document.getElementById('pwd-confirm').value='';
+  okEl.style.display='block';
+  setTimeout(function(){okEl.style.display='none';},3000);
+}
+
+function showForgotPassword(){
+  document.getElementById('prof-login-form').style.display='none';
+  document.getElementById('forgot-pwd-form').style.display='block';
+  document.getElementById('forgot-result').style.display='none';
+}
+function closeForgotPassword(){
+  document.getElementById('forgot-pwd-form').style.display='none';
+  document.getElementById('prof-login-form').style.display='block';
+}
+async function sendForgotPassword(){
+  const res=document.getElementById('forgot-result');
+  if(!emailConfig.profEmail){
+    res.style.display='block';
+    res.style.background='#FCEBEB';res.style.color='#791F1F';
+    res.textContent='⚠️ Aucun email professeur configuré. Connectez-vous d\'abord et configurez votre email dans "Config email".';
+    return;
+  }
+  if(!ejsReady&&emailConfig.pubkey){try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){}}
+  if(!ejsReady||!emailConfig.serviceId||!emailConfig.tplBook){
+    res.style.display='block';
+    res.style.background='#FCEBEB';res.style.color='#791F1F';
+    res.textContent='⚠️ EmailJS non configuré. Contactez le support technique.';
+    return;
+  }
+  try{
+    await emailjs.send(emailConfig.serviceId,emailConfig.tplBook,{
+      to_name:'Professeur',
+      to_email:emailConfig.profEmail,
+      date:'Récupération de mot de passe',
+      heure:'—',
+      instrument:'—',
+      prof_email:emailConfig.profEmail,
+      message_type:'Votre mot de passe MusicPlanning est : '+PROF_PASSWORD
+    });
+    res.style.display='block';
+    res.style.background='#E1F5EE';res.style.color='#085041';
+    res.textContent='✅ Email envoyé à '+emailConfig.profEmail+' ! Vérifiez votre boîte mail.';
+  }catch(e){
+    res.style.display='block';
+    res.style.background='#FCEBEB';res.style.color='#791F1F';
+    res.textContent='❌ Erreur d\'envoi. Vérifiez votre connexion.';
+  }
+}
+function openProfLogin(){
+  document.getElementById('prof-login-form').style.display='block';
+  document.getElementById('prof-password').focus();
+  document.getElementById('prof-login-error').style.display='none';
+}
+function closeProfLogin(){
+  document.getElementById('prof-login-form').style.display='none';
+  document.getElementById('forgot-pwd-form').style.display='none';
+  document.getElementById('prof-password').value='';
+}
+function checkProfPassword(){
+  const pwd=document.getElementById('prof-password').value;
+  if(pwd===PROF_PASSWORD){
+    login('prof');
+  }else{
+    document.getElementById('prof-login-error').style.display='block';
+    document.getElementById('prof-password').value='';
+    document.getElementById('prof-password').focus();
+  }
+}
+function loginEleve(){login('eleve');}
+
+function login(r){
+  role=r;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  document.getElementById('role-badge').textContent=r==='prof'?'Professeur':'Élève';
+  document.getElementById('role-badge').className='role-badge '+(r==='prof'?'badge-prof':'badge-eleve');
+  document.getElementById('tab-eleves').style.display=r==='prof'?'':'none';
+  document.getElementById('tab-rappels').style.display=r==='prof'?'':'none';
+  document.getElementById('tab-config').style.display=r==='prof'?'':'none';
+  document.getElementById('tab-list').style.display=r==='prof'?'':'none';
+  document.getElementById('tab-list').innerHTML=r==='prof'?'<i class="ti ti-list"></i> Mes cours':'<i class="ti ti-list"></i> Créneaux disponibles';
+  document.getElementById('email-status-card').style.display=r==='prof'?'':'none';
+  renderSidebar();renderCal();updateStats();updateEmailStatus();
+  if(r==='prof'){
+    fillConfigForm();
+    loadFromSheets().then(function(){
+      lessons.filter(function(l){return l.status==='booked'&&l.eleveEmail;}).forEach(scheduleReminders);
+      renderCal();updateStats();
+    });
+  }else{
+    loadFromSheets();
+  }
+  // Détection accès élève direct via URL
+  if(window.location.search.includes('eleve')&&r!=='prof'){
+    document.getElementById('tab-config').style.display='none';
+  }
+}
+function logout(){
+  role=null;
+  // Réinitialiser tous les onglets
+  ['cal','list','rappels','eleves','config'].forEach(function(v){
+    var tb=document.getElementById('tab-'+v);
+    if(tb){tb.style.display='';tb.classList.remove('active');}
+  });
+  document.getElementById('tab-cal').classList.add('active');
+  // Réafficher l'écran de login
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app-screen').style.display='none';
+  // Remettre le calendrier sur la vue par défaut
+  showTab('cal');
+  closeProfLogin();
+}
+function fillConfigForm(){
+  document.getElementById('cfg-pubkey').value=emailConfig.pubkey||'';
+  document.getElementById('cfg-service').value=emailConfig.serviceId||'';
+  document.getElementById('cfg-tpl-book').value=emailConfig.tplBook||'';
+  document.getElementById('cfg-tpl-cancel').value=emailConfig.tplCancel||'';
+  document.getElementById('cfg-tpl-reminder').value=emailConfig.tplReminder||'';
+  document.getElementById('cfg-prof-email').value=emailConfig.profEmail||'';
+}
+
+// ── NAV ──
+function showTab(t){
+  ['cal','list','rappels','eleves','config'].forEach(function(v){
+    document.getElementById('view-'+v).style.display=v===t?'':'none';
+    var tb=document.getElementById('tab-'+v);if(tb)tb.classList.toggle('active',v===t);
+  });
+  if(t==='list')renderList();
+  if(t==='eleves')renderEleves();
+  if(t==='rappels')renderReminderList();
+}
+function renderSidebar(){
+  document.getElementById('prof-actions').innerHTML=role==='prof'?'<button class="btn btn-primary" onclick="openAddSlot()"><i class="ti ti-plus"></i> Ajouter un créneau</button><button class="btn" onclick="openManageInstruments()" style="color:#534AB7"><i class="ti ti-music"></i> Gérer les instruments</button><button class="btn" onclick="refreshData()" style="color:#1D9E75"><i class="ti ti-refresh"></i> Actualiser les données</button>':'';
+  document.getElementById('eleve-actions').innerHTML='';
+  document.getElementById('eleve-actions').innerHTML=role==='eleve'?'<button class="btn btn-success" onclick="showTab(\'list\')"><i class="ti ti-calendar-check"></i> Voir les créneaux libres</button>':'';
+}
+function updateStats(){
+  const m=curYear+'-'+String(curMonth+1).padStart(2,'0');
+  const ml=lessons.filter(function(l){return l.date.startsWith(m)&&l.status!=='cancelled';});
+  document.getElementById('stat-total').textContent=ml.length;
+  document.getElementById('stat-free').textContent=ml.filter(function(l){return l.status==='free';}).length;
+}
+
+// ── CAL ──
+function renderCal(){
+  document.getElementById('month-label').textContent=MONTHS[curMonth]+' '+curYear;
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML=DAYS.map(function(d){return'<div class="day-label">'+d+'</div>';}).join('');
+  const first=new Date(curYear,curMonth,1);
+  let startDow=(first.getDay()+6)%7;
+  const dim=new Date(curYear,curMonth+1,0).getDate();
+  const pd=new Date(curYear,curMonth,0).getDate();
+  let cells=[];
+  for(let i=startDow-1;i>=0;i--)cells.push({d:pd-i,cur:false});
+  for(let d=1;d<=dim;d++)cells.push({d:d,cur:true});
+  while(cells.length%7!==0)cells.push({d:cells.length-dim-startDow+1,cur:false});
+  grid.innerHTML+=cells.map(function(c){
+    const ds=c.cur?fmtDate(curYear,curMonth,c.d):'';
+    const isToday=c.cur&&c.d===today.getDate()&&curMonth===today.getMonth()&&curYear===today.getFullYear();
+    const dl=c.cur?lessons.filter(function(l){return l.date===ds&&l.status!=='cancelled';}):[];
+    const pills=dl.slice(0,3).map(function(l){
+      var statusIcon=l.status==='booked'?'✅':l.status==='pending'?'⏳':'🎵';
+      var labelProf=statusIcon+' '+l.time+' '+l.instrument+(l.status==='booked'?' — '+l.eleve.split(' ')[0]:'');
+      var labelEleve=l.status==='booked'?'🔒 '+l.time+' Réservé':l.status==='pending'?'⏳ '+l.time+' En attente':'🎵 '+l.time+' '+l.instrument;
+      var label=role==='prof'?labelProf:labelEleve;
+      return'<div class="lesson-pill '+(l.status==='booked'?'pill-booked':l.status==='pending'?'pill-pending':'pill-free')+'" style="font-size:9px;padding:2px 5px">'+label+'</div>';
+    }).join('');
+    const more=dl.length>2?'<div style="font-size:10px;color:#aaa">+'+(dl.length-2)+'</div>':'';
+    const numEl=isToday?'<div class="today-num">'+c.d+'</div>':'<div class="day-num">'+c.d+'</div>';
+    return'<div class="day-cell'+(c.cur?'':' other-month')+(isToday?' today':'')+'"'+(c.cur?' onclick="openDay(\''+ds+'\')"':'')+'>'+numEl+pills+more+'</div>';
+  }).join('');
+  updateStats();
+}
+function prevMonth(){curMonth--;if(curMonth<0){curMonth=11;curYear--;}renderCal();}
+function nextMonth(){curMonth++;if(curMonth>11){curMonth=0;curYear++;}renderCal();}
+
+// ── MODALES ──
+function openDay(dateStr){
+  const dl=lessons.filter(function(l){return l.date===dateStr;});
+  const d=new Date(dateStr+'T12:00:00');
+  const label=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  let html='<div class="modal-title">'+label+'</div><div class="modal-sub">'+dl.length+' cours ce jour</div>';
+  if(!dl.length){
+    if(role==='eleve'){
+      html+='<div style="margin-top:4px">'
+        +'<div style="font-size:13px;color:#888;margin-bottom:12px">Souhaitez-vous demander un créneau ce jour ?</div>'
+        +'<div class="input-row"><label>Heure souhaitée</label><select id="req-time">'+TIMES.map(function(t){return'<option>'+t+'</option>';}).join('')+'</select></div>'
+        +'<div class="input-row"><label>Instrument</label><select id="req-inst">'+INSTRUMENTS.map(function(i){return'<option>'+i+'</option>';}).join('')+'</select></div>'
+        +'<button class="btn btn-primary" onclick="requestSlot(\''+dateStr+'\')"><i class="ti ti-calendar-plus"></i> Demander ce créneau</button>'
+        +'</div>';
+    }else{
+      html+='<div class="empty-state">Aucun cours prévu</div>';
+    }
+  }
+  else html+=dl.map(function(l){
+    return'<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0">'
+      +'<div style="width:9px;height:9px;border-radius:50%;background:'+(l.status==='booked'?'#1D9E75':l.status==='pending'?'#BA7517':l.status==='free'?'#7F77DD':'#E24B4A')+';flex-shrink:0"></div>'
+      +'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+l.time+' — '+l.instrument+'</div>'
+      +'<div style="font-size:12px;color:#888">'+(l.status==='booked'?(role==='prof'?l.eleve:'🔒 Réservé'):l.status==='pending'?(role==='prof'?'⏳ En attente — '+l.eleve:'⏳ En attente de confirmation'):l.status==='free'?'Créneau libre':'Annulé')+'</div></div>'
+      +(l.status==='free'&&role==='eleve'?'<button class="btn btn-success btn-sm" onclick="openBookForm('+l.id+')"><i class="ti ti-calendar-check"></i> Réserver</button>':'')
+      +(l.status==='booked'&&role==='eleve'?'<button class="btn btn-danger btn-sm" onclick="cancelLesson('+l.id+')">Annuler</button>':'')
+      +(l.status==='pending'&&role==='eleve'?'<button class="btn btn-warning btn-sm" onclick="cancelPendingLesson('+l.id+')">Annuler ma demande</button>':'')
+      +(l.status==='pending'&&role==='prof'?'<button class="btn btn-success btn-sm" style="margin-right:4px" onclick="acceptRequest('+l.id+')"><i class="ti ti-check"></i> Accepter</button><button class="btn btn-danger btn-sm" onclick="refuseRequest('+l.id+')"><i class="ti ti-x"></i> Refuser</button>':'')
+      +(role==='prof'&&l.status==='booked'?'<button class="icon-btn" title="Rappel" style="color:#BA7517" onclick="sendReminderEmail(lessons.find(function(x){return x.id=='+l.id+';}),\'Rappel manuel\')"><i class="ti ti-bell"></i></button>':'')
+      +(role==='prof'?'<button class="icon-btn" title="Supprimer" style="color:#E24B4A" onclick="deleteLesson('+l.id+')"><i class="ti ti-trash"></i></button>':'')
+      +'</div>';
+  }).join('');
+  if(role==='prof')html+='<button class="btn btn-primary" style="margin-top:14px" onclick="openAddSlotDate(\''+dateStr+'\')"><i class="ti ti-plus"></i> Ajouter un créneau</button>';
+  showModal(html);
+}
+
+function openBookForm(id){
+  const l=lessons.find(function(x){return x.id===id;});
+  const d=new Date(l.date+'T12:00:00');
+  const dateStr=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  // Proposer les élèves existants si connecté en élève
+  const elevesOptions=eleves.length?'<div class="input-row"><label>Choisir parmi mes élèves enregistrés (optionnel)</label><select id="bk-eleve-sel" onchange="prefillEleve()"><option value="">— Saisir manuellement —</option>'+eleves.map(function(e){return'<option value="'+e.id+'">'+e.prenom+' '+e.nom+'</option>';}).join('')+'</select></div>':'';
+  showModal('<div class="modal-title">Réserver ce cours</div>'
+    +'<div class="modal-sub">'+l.instrument+' — '+dateStr+' à '+l.time+'</div>'
+    +elevesOptions
+    +'<div class="input-row"><label>Nom complet</label><input type="text" id="bk-name" placeholder="ex: Marie Dupont"></div>'
+    +'<div class="input-row"><label>Email</label><input type="email" id="bk-email" placeholder="ex: marie@email.com"></div>'
+    +'<div class="input-row"><label>Téléphone WhatsApp <span style="font-size:11px;background:#EEEDFE;color:#3C3489;padding:2px 6px;border-radius:4px">pour rappels WhatsApp</span></label><input type="tel" id="bk-tel" placeholder="ex: +590691234567"></div>'
+    +'<div class="info-box info-green"><i class="ti ti-mail" style="flex-shrink:0"></i><div>Confirmation par email + WhatsApp + rappels <strong>24h</strong> et <strong>1h</strong> avant le cours.</div></div>'
+    +'<button class="btn btn-success" style="margin-top:14px" onclick="confirmBook('+id+')"><i class="ti ti-check"></i> Confirmer la réservation</button>');
+}
+
+function prefillEleve(){
+  const sel=document.getElementById('bk-eleve-sel');
+  if(!sel)return;
+  const id=parseInt(sel.value);
+  if(!id)return;
+  const e=eleves.find(function(x){return x.id===id;});
+  if(e){
+    document.getElementById('bk-name').value=e.prenom+' '+e.nom;
+    document.getElementById('bk-email').value=e.email;
+    const telEl=document.getElementById('bk-tel');
+    if(telEl)telEl.value=e.tel||'';
+  }
+}
+
+function requestSlot(dateStr){
+  const time=document.getElementById('req-time').value;
+  const inst=document.getElementById('req-inst').value;
+  const d=new Date(dateStr+'T12:00:00');
+  const label=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  showModal('<div class="modal-title">Demander un créneau</div>'
+    +'<div class="modal-sub">'+inst+' — '+label+' à '+time+'</div>'
+    +'<div class="input-row"><label>Votre nom complet</label><input type="text" id="bk-name" placeholder="ex: Marie Dupont"></div>'
+    +'<div class="input-row"><label>Email</label><input type="email" id="bk-email" placeholder="ex: marie@email.com"></div>'
+    +'<div class="input-row"><label>Téléphone WhatsApp</label><input type="tel" id="bk-tel" placeholder="ex: +590691234567"></div>'
+    +'<div class="info-box info-orange"><i class="ti ti-clock" style="flex-shrink:0"></i><div><strong>En attente de confirmation</strong> — le professeur recevra votre demande et vous confirmera la disponibilité par email et WhatsApp avant de valider.</div></div>'
+    +'<button class="btn btn-primary" style="margin-top:14px" onclick="confirmRequest(\''+dateStr+'\',\''+time+'\',\''+inst+'\')"><i class="ti ti-send"></i> Envoyer la demande</button>');
+}
+
+async function confirmRequest(dateStr,time,inst){
+  const name=document.getElementById('bk-name').value.trim();
+  const email=document.getElementById('bk-email').value.trim();
+  const tel=(document.getElementById('bk-tel')||{value:''}).value.trim();
+  if(!name){showNotif('Veuillez entrer votre nom','err');return;}
+  if(!email){showNotif('Veuillez entrer votre email','err');return;}
+  const newLesson={id:nextId++,date:dateStr,time:time,eleve:name,eleveEmail:email,eleveTel:tel,eleveId:null,instrument:inst,status:'pending'};
+  lessons.push(newLesson);
+  saveLesson(newLesson);
+  closeModal();renderCal();
+  showNotif('Demande envoyée ! En attente de confirmation.','warning');
+  if(!ejsReady&&emailConfig.pubkey){try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){}}
+  const d=new Date(dateStr+'T12:00:00');
+  const dateStr2=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  // ── Email au PROFESSEUR ──
+  if(ejsReady&&emailConfig.tplBook&&emailConfig.profEmail){
+    try{
+      await emailjs.send(emailConfig.serviceId,emailConfig.tplBook,{
+        to_name:'Professeur',
+        to_email:emailConfig.profEmail,
+        date:dateStr2,
+        heure:time,
+        instrument:inst,
+        prof_email:emailConfig.profEmail,
+        eleve_nom:name,
+        eleve_email:email,
+        statut:'⏳ DEMANDE EN ATTENTE — '+name+' demande un cours de '+inst+' le '+dateStr2+' à '+time+'. Connectez-vous pour accepter ou refuser.'
+      });
+      setTimeout(function(){showNotif('📧 Notification envoyée au professeur !','ok');},1500);
+    }catch(e){console.error('Email prof error',e);}
+  }
+  // ── Email à l'ÉLÈVE pour confirmer réception ──
+  if(ejsReady&&emailConfig.tplBook&&email){
+    try{
+      await emailjs.send(emailConfig.serviceId,emailConfig.tplBook,{
+        to_name:name,
+        to_email:email,
+        date:dateStr2,
+        heure:time,
+        instrument:inst,
+        prof_email:emailConfig.profEmail,
+        statut:'Votre demande de cours a bien été reçue. Le professeur vous confirmera sa disponibilité très prochainement.'
+      });
+    }catch(e){}
+  }
+  // ── WhatsApp au PROFESSEUR via Make ──
+  sendToMake('demande_creneau',newLesson,'⏳ Nouvelle demande de créneau');
+}
+
+
+async function acceptRequest(id){
+  const l=lessons.find(function(x){return x.id===id;});
+  l.status='booked';
+  saveLesson(l);
+  closeModal();renderCal();showNotif('Demande acceptée — confirmation envoyée à '+l.eleve,'ok');
+  if(!ejsReady&&emailConfig.pubkey){try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){}}
+  // Email confirmation à l'élève + prof
+  await sendEmails(l,'book');
+  // WhatsApp confirmation à l'élève
+  sendToMake('confirmation',l,'✅ Cours confirmé !');
+  scheduleReminders(l);
+}
+
+async function refuseRequest(id){
+  const l=lessons.find(function(x){return x.id===id;});
+  l.status='cancelled';
+  closeModal();renderCal();showNotif('Demande refusée — notification envoyée à '+l.eleve,'warning');
+  if(!ejsReady&&emailConfig.pubkey){try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){}}
+  await sendEmails(l,'cancel');
+  sendToMake('refus',l,'');
+}
+
+// ── GESTION INSTRUMENTS ──
+async function refreshData(){
+  showNotif('Actualisation en cours...','warning');
+  await loadFromSheets();
+  renderCal();updateStats();
+  if(role==='prof')renderEleves();
+  showNotif('Données actualisées !','ok');
+}
+
+function openManageInstruments(){
+  showModal('<div class="modal-title">Gérer les instruments</div>'
+    +'<div class="modal-sub">Ajoutez ou supprimez des instruments</div>'
+    +'<div id="inst-list" style="margin-bottom:12px">'+INSTRUMENTS.map(function(inst,i){
+      return'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0">'
+        +'<div style="flex:1;font-size:13px">'+inst+'</div>'
+        +'<button class="icon-btn" style="color:#E24B4A" onclick="removeInstrument('+i+')"><i class="ti ti-trash"></i></button>'
+        +'</div>';
+    }).join('')+'</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<input type="text" id="new-inst" placeholder="Nouvel instrument..." style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid #e5e5e5;font-size:13px;font-family:inherit">'
+    +'<button class="btn btn-primary btn-sm" onclick="addInstrument()"><i class="ti ti-plus"></i> Ajouter</button>'
+    +'</div>');
+}
+
+function removeInstrument(index){
+  INSTRUMENTS.splice(index,1);
+  saveInstruments();
+  openManageInstruments();
+}
+
+function addInstrument(){
+  const val=document.getElementById('new-inst').value.trim();
+  if(!val){showNotif('Entrez un nom d\'instrument','err');return;}
+  if(INSTRUMENTS.indexOf(val)>=0){showNotif('Instrument déjà dans la liste','warning');return;}
+  INSTRUMENTS.push(val);
+  saveInstruments();
+  openManageInstruments();
+  showNotif(val+' ajouté !','ok');
+}
+
+async function confirmBook(id){
+  const name=document.getElementById('bk-name').value.trim();
+  const email=document.getElementById('bk-email').value.trim();
+  if(!name){showNotif('Veuillez entrer votre nom','err');return;}
+  if(!email){showNotif('Veuillez entrer votre email','err');return;}
+  const tel=(document.getElementById('bk-tel')||{value:''}).value.trim();
+  const l=lessons.find(function(x){return x.id===id;});
+  const selEl=document.getElementById('bk-eleve-sel');
+  const eleveId=selEl?parseInt(selEl.value)||null:null;
+  l.status='booked';l.eleve=name;l.eleveEmail=email;l.eleveTel=tel;l.eleveId=eleveId;
+  closeModal();renderCal();showNotif('Cours réservé !','ok');
+  saveLesson(l);
+  if(!ejsReady&&emailConfig.pubkey){try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){}}
+  const sent=await sendEmails(l,'book');
+  if(sent)setTimeout(function(){showNotif('✉️ Confirmation envoyée !','ok');},1800);
+  sendToMake('reservation',l,'');
+  scheduleReminders(l);
+}
+
+async function cancelPendingLesson(id){
+  if(!confirm('Annuler votre demande de cours ?'))return;
+  const l=lessons.find(function(x){return x.id===id;});
+  l.status='cancelled';
+  saveLesson(l);
+  closeModal();renderCal();showNotif('Demande annulée','warning');
+  if(!ejsReady&&emailConfig.pubkey){try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){}}
+  // Notifier le prof
+  if(ejsReady&&emailConfig.tplCancel&&emailConfig.profEmail){
+    const d=new Date(l.date+'T12:00:00');
+    const dateStr=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+    try{
+      await emailjs.send(emailConfig.serviceId,emailConfig.tplCancel,{
+        to_name:'Professeur',to_email:emailConfig.profEmail,
+        date:dateStr,heure:l.time,instrument:l.instrument,
+        prof_email:emailConfig.profEmail,
+        statut:'❌ Demande annulée par l\'élève '+l.eleve+' avant confirmation'
+      });
+    }catch(e){}
+  }
+  sendToMake('annulation_demande',l,'❌ Demande annulée par l\'élève');
+}
+
+async function cancelLesson(id){
+  if(!confirm('Annuler ce cours ?'))return;
+  const l=lessons.find(function(x){return x.id===id;});
+  l.status='cancelled';
+  closeModal();renderCal();renderList();showNotif('Cours annulé','warning');
+  saveLesson(l);
+  if(!ejsReady&&emailConfig.pubkey){try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){}}
+  if(l.eleveEmail){
+    // Email annulation à l'élève
+    await sendEmails(l,'cancel');
+    // Email notification au prof
+    if(ejsReady&&emailConfig.tplCancel&&emailConfig.profEmail){
+      const d=new Date(l.date+'T12:00:00');
+      const dateStr=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+      try{
+        await emailjs.send(emailConfig.serviceId,emailConfig.tplCancel,{
+          to_name:'Professeur',
+          to_email:emailConfig.profEmail,
+          date:dateStr,
+          heure:l.time,
+          instrument:l.instrument,
+          prof_email:emailConfig.profEmail,
+          statut:'❌ Cours annulé par l\'élève '+l.eleve
+        });
+      }catch(e){}
+    }
+    // WhatsApp annulation au prof et élève
+    sendToMake('annulation',l,'❌ Cours annulé par l\'élève');
+    setTimeout(function(){showNotif('✉️ Notifications d\'annulation envoyées !','ok');},1800);
+  }
+}
+async function deleteLesson(id){
+  const l=lessons.find(function(x){return x.id===id;});
+  const hasEleve=l&&l.eleveEmail&&(l.status==='booked'||l.status==='pending');
+  const msg=hasEleve?'Supprimer ce cours et notifier '+l.eleve+' par email/WhatsApp ?':'Supprimer ce cours ?';
+  if(!confirm(msg))return;
+  if(hasEleve){
+    if(!ejsReady&&emailConfig.pubkey){try{emailjs.init({publicKey:emailConfig.pubkey});ejsReady=true;}catch(e){}}
+    l.status='cancelled';
+    await sendEmails(l,'cancel');
+    sendToMake('annulation_prof',l,'');
+  }
+  lessons=lessons.filter(function(x){return x.id!==id;});
+  saveLessonDelete(id);
+  closeModal();renderCal();updateStats();
+  showNotif(hasEleve?'Cours supprimé — élève notifié 📧':'Cours supprimé','warning');
+}
+function openAddSlot(){showModal(addSlotForm(''));}
+function openAddSlotDate(d){showModal(addSlotForm(d));}
+function addSlotForm(dv){
+  return'<div class="modal-title">Nouveau créneau</div>'
+    +'<div class="modal-sub">Ajouter un créneau pour vos élèves</div>'
+    +'<div class="input-row"><label>Date</label><input type="date" id="f-date" value="'+dv+'"></div>'
+    +'<div class="input-row"><label>Heure</label><select id="f-time">'+TIMES.map(function(t){return'<option>'+t+'</option>';}).join('')+'</select></div>'
+    +'<div class="input-row"><label>Instrument</label><select id="f-inst">'+INSTRUMENTS.map(function(i){return'<option>'+i+'</option>';}).join('')+'</select></div>'
+    +'<button class="btn btn-primary" style="margin-top:6px" onclick="saveSlot()"><i class="ti ti-check"></i> Confirmer</button>';
+}
+function saveSlot(){
+  const date=document.getElementById('f-date').value;
+  if(!date){showNotif('Choisissez une date','err');return;}
+  const newL={id:nextId++,date:date,time:document.getElementById('f-time').value,eleveId:null,eleve:'',eleveEmail:'',eleveTel:'',instrument:document.getElementById('f-inst').value,status:'free'};
+  lessons.push(newL);
+  saveLesson(newL);
+  closeModal();renderCal();showNotif('Créneau ajouté !','ok');
+}
+
+function renderList(){
+  const el=document.getElementById('lesson-list');
+  document.getElementById('list-title').textContent=role==='prof'?'Tous les cours':'Créneaux disponibles';
+  let filtered=role==='prof'?lessons:lessons.filter(function(l){return l.status==='free';});
+  filtered=filtered.filter(function(l){return l.status!=='cancelled';}).sort(function(a,b){return a.date.localeCompare(b.date)||a.time.localeCompare(b.time);});
+  if(!filtered.length){el.innerHTML='<div class="empty-state">Aucun cours à afficher</div>';return;}
+  el.innerHTML=filtered.map(function(l){
+    return'<div class="lesson-item">'
+      +'<div class="lesson-dot" style="background:'+(l.status==='booked'?'#1D9E75':'#7F77DD')+'"></div>'
+      +'<div class="lesson-info"><div class="lesson-name">'+l.instrument+(l.status==='booked'?' — '+l.eleve:'<span class="tag-free">Libre</span>')+'</div>'
+      +'<div class="lesson-time">'+formatDate(l.date)+' à '+l.time+'</div></div>'
+      +'<div style="display:flex;gap:4px">'
+      +(l.status==='free'&&role==='eleve'?'<button class="icon-btn" title="Réserver" style="color:#1D9E75" onclick="openBookForm('+l.id+')"><i class="ti ti-calendar-check"></i></button>':'')
+      +(l.status==='booked'&&role==='eleve'?'<button class="icon-btn" title="Annuler" style="color:#E24B4A" onclick="cancelLesson('+l.id+')"><i class="ti ti-x"></i></button>':'')
+      +(role==='prof'&&l.status==='booked'?'<button class="icon-btn" title="Rappel" style="color:#BA7517" onclick="sendReminderEmail(lessons.find(function(x){return x.id=='+l.id+';}),\'Rappel\')"><i class="ti ti-bell"></i></button>':'')
+      +(role==='prof'?'<button class="icon-btn" title="Supprimer" style="color:#E24B4A" onclick="deleteLesson('+l.id+')"><i class="ti ti-trash"></i></button>':'')
+      +'</div></div>';
+  }).join('');
+}
+
+function formatDate(s){const d=new Date(s+'T12:00:00');return d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();}
+function showModal(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal').style.display='flex';}
+function closeModal(){document.getElementById('modal').style.display='none';}
+function handleModalBgClick(e){if(e.target.id==='modal')closeModal();}
+let notifTimer=null;
+function showNotif(msg,type){
+  const el=document.getElementById('notif-bar');
+  el.innerHTML='<i class="ti ti-'+(type==='ok'?'circle-check':type==='err'?'circle-x':'alert-triangle')+'"></i> '+msg;
+  el.className='notif'+(type==='err'?' error':type==='warning'?' warning':'');
+  el.style.display='flex';clearTimeout(notifTimer);
+  notifTimer=setTimeout(function(){el.style.display='none';},4000);
+}
+loadConfig();renderCal();
+// Auto-connexion élève si URL contient ?eleve
+if(window.location.search.includes('eleve')){login('eleve');}
+</script>
+</body>
+</html>
